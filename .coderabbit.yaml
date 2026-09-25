@@ -1,0 +1,70 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# SPDX-FileCopyrightText: 2026 Aditya Mehra <aix.m@outlook.com>
+# SPDX-License-Identifier: LGPL-3.0-or-later
+#
+# CodeRabbit configuration for the Verzeta Android client (Kotlin / Compose /
+# Gradle). Tuned to the project's contribution standards.
+
+language: en-US
+early_access: false
+
+reviews:
+  profile: assertive
+  request_changes_workflow: true
+  high_level_summary: true
+  poem: false
+  review_status: true
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - main
+  path_filters:
+    - "!**/build/**"
+    - "!**/*.gradle.lockfile"
+    - "!gradle/wrapper/**"
+  path_instructions:
+    - path: "app/src/main/kotlin/**/*.kt"
+      instructions: >-
+        Enforce the project standards. Every file needs the two-line SPDX header
+        (LGPL-3.0-or-later). Naming: classes CamelCase, functions camelCase,
+        constants UPPER_SNAKE_CASE. Verify correct layering (ui / data / storage /
+        protocol / remote / util) and single responsibility. New logic that is
+        testable in isolation needs a unit test; a bug fix needs a regression test
+        where practical.
+    - path: "app/src/main/kotlin/**/*.kt"
+      instructions: >-
+        Stability rules (the project's non-negotiables, flag any violation). Use
+        structured concurrency: coroutines launched in a lifecycle or viewModel
+        scope, never GlobalScope; every suspend function and Flow collector must
+        handle errors and cancellation. Do not block the main thread. Push I/O to
+        the correct Dispatcher. Respect null-safety: no `!!` used to silence the
+        compiler. Clean up observers, collectors, and receivers so nothing leaks
+        across configuration changes. Handle every error path explicitly: no empty
+        catch, no ignored results. No hacks, shortcuts, TODO markers, or dead code
+        may ship.
+    - path: "app/src/main/kotlin/com/verzeta/android/protocol/**"
+      instructions: >-
+        This is the wire boundary to the desktop host. Flag any client-side op,
+        field, or message shape the host wire-protocol does not serve; the two
+        must stay in sync. Validate all data crossing the socket; never trust host
+        payloads blindly.
+    - path: "**/*.md"
+      instructions: >-
+        No em-dashes, no AI-slop phrasing. Keep internal development context out
+        of files that ship publicly.
+
+  tools:
+    detekt:
+      enabled: true
+    github-checks:
+      enabled: true
+    markdownlint:
+      enabled: true
+
+chat:
+  auto_reply: true
+
+knowledge_base:
+  learnings:
+    scope: local

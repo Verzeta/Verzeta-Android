@@ -1,0 +1,110 @@
+# SPDX-FileCopyrightText: 2026 Aditya Mehra <aix.m@outlook.com>
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
+name: Bug report
+description: Report a reproducible defect. Reports without troubleshooting steps and a logcat trace are closed automatically.
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug. **Please read this first:**
+
+        - Low-effort reports ("X is not working" with no logs) are **closed automatically** and reopened once the required information is added.
+        - Work through the [Troubleshooting guide](https://github.com/Verzeta/Verzeta-Android/blob/main/docs/User/13-troubleshooting.md) before filing.
+        - **Do not paste API keys, pairing secrets, or private conversation contents.** Redact before posting.
+
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Before you file (all required)
+      description: Reports that have not done these are closed.
+      options:
+        - label: I worked through the [Troubleshooting guide](https://github.com/Verzeta/Verzeta-Android/blob/main/docs/User/13-troubleshooting.md) and my issue is not resolved there.
+          required: true
+        - label: I searched [existing issues](https://github.com/Verzeta/Verzeta-Android/issues?q=is%3Aissue) and this is not a duplicate.
+          required: true
+        - label: I am on the latest app version and can still reproduce this.
+          required: true
+        - label: I force-stopped and reopened the app and the problem persists.
+          required: true
+        - label: I have removed API keys and private data from everything I paste below.
+          required: true
+
+  - type: input
+    id: app-version
+    attributes:
+      label: App version
+      description: From Settings → About Verzeta.
+      placeholder: e.g. 1.0.0
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: Device and Android version
+      placeholder: e.g. Pixel 7, Android 15
+    validations:
+      required: true
+
+  - type: input
+    id: host-version
+    attributes:
+      label: Verzeta Studio host version you paired with
+      description: The desktop host this client connects to (Help → About in the host).
+      placeholder: e.g. 1.0.0
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Exact, numbered steps. A bug we cannot reproduce cannot be fixed.
+      placeholder: |
+        1. Pair with host ...
+        2. Open ...
+        3. Do ...
+        4. Observe ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected to happen
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: What actually happened
+      description: Include the exact error text shown, if any.
+    validations:
+      required: true
+
+  - type: textarea
+    id: debug-log
+    attributes:
+      label: Debug log with traces (required)
+      description: |
+        Capture a logcat trace while reproducing the problem, then paste the relevant lines. This is required: "I didn't capture a log" reports are closed.
+
+        With USB debugging on and the device connected:
+        ```
+        adb logcat --pid=$(adb shell pidof -s com.verzeta.android) *:V > verzeta.log
+        ```
+        (or `adb logcat | grep -i verzeta`). Reproduce the problem, stop the capture, and paste the lines around the failure. Redact any API keys or pairing secrets first.
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else you already ruled out (optional)
+    validations:
+      required: false

@@ -1,0 +1,38 @@
+# SPDX-FileCopyrightText: 2026 Aditya Mehra <aix.m@outlook.com>
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
+# Compiles the debug variant and runs the unit tests on every non-draft PR and
+# on push to main, per CONTRIBUTING.md (the debug variant must compile cleanly
+# and unit tests must pass). UI is verified by the maintainer on a device.
+name: Build and test
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  # Deliberately NOT triggered by `push`. Publishing the mirror IS a
+  # force-push of main, so a push trigger reran this whole build on every
+  # publish, to verify a tree that had already been built and tested before
+  # it was published. It verified nothing new and, on a private mirror,
+  # spent Actions quota to do it. A contributor's pull request is the only
+  # thing here that needs independent verification.
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Compile and unit test (debug)
+        run: ./gradlew --no-daemon compileDebugKotlin testDebugUnitTest

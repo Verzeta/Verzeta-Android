@@ -1,0 +1,56 @@
+# SPDX-FileCopyrightText: 2026 Aditya Mehra <aix.m@outlook.com>
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
+# Closes non-compliant work that has gone quiet: PRs still `needs-requirements`
+# after ~24h, bug reports still `needs-info` after 14 days. Any update resets
+# the clock.
+name: Close stale non-compliant items
+
+on:
+  schedule:
+    # Every six hours. Hourly gave the public repository 24 scheduled runs
+    # a day on a tracker that is usually empty; the requirement comment
+    # promises a PR is closed "after 24 hours", which a six-hourly sweep
+    # still honours (it closes between 24 and 30 hours).
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  prs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v9
+        with:
+          only-labels: "needs-requirements"
+          days-before-pr-stale: 1
+          days-before-pr-close: 0
+          days-before-issue-stale: -1
+          days-before-issue-close: -1
+          remove-stale-when-updated: true
+          stale-pr-label: "stale"
+          close-pr-message: >-
+            Closing this pull request: it has not met the contribution
+            requirements within 24 hours (see the requirements comment above).
+            Reopen it once the debug variant compiles, unit tests pass, it links
+            an issue, and the checklist is complete. Thank you.
+
+  issues:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v9
+        with:
+          only-labels: "needs-info"
+          days-before-issue-stale: 14
+          days-before-issue-close: 0
+          days-before-pr-stale: -1
+          days-before-pr-close: -1
+          remove-stale-when-updated: true
+          stale-issue-label: "stale"
+          close-issue-message: >-
+            Closing this report: the requested logcat trace and details were not
+            added within 14 days. Comment with the missing information (a logcat
+            capture and exact steps) and it will reopen. Thank you.

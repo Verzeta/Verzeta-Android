@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2026 Aditya Mehra <aix.m@outlook.com>
+SPDX-License-Identifier: LGPL-3.0-or-later
+-->
+<resources>
+    <style name="Theme.Verzeta" parent="android:Theme.DeviceDefault.NoActionBar">
+        <item name="android:windowBackground">?android:colorBackground</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+    </style>
+</resources>

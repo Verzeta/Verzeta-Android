@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2026 Aditya Mehra <aix.m@outlook.com>
+SPDX-License-Identifier: LGPL-3.0-or-later
+-->
+<!--
+    User-facing strings. v1.0.0 ships English only (no localised
+    strings.xml-* siblings); full i18n is post-v1.0 work. The Play
+    Store requires a translatable app name, hence app_name living here
+    even though no translations exist yet.
+-->
+<resources>
+    <string name="app_name">Verzeta</string>
+
+    <!-- Strings for the assistant reasoning/thinking disclosure UI -->
+    <string name="thinking_disclosure_header">Reasoning (%1$d chars)</string>
+    <string name="thinking_disclosure_toggle">Expand or collapse the model\'s reasoning</string>
+    <string name="thinking_disclosure_state_expanded">Reasoning, expanded</string>
+    <string name="thinking_disclosure_state_collapsed">Reasoning, collapsed</string>
+    <string name="thinking_only_fallback">The model produced reasoning only. Expand below to see it.</string>
+</resources>

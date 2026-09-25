@@ -1,0 +1,39 @@
+# SPDX-FileCopyrightText: 2026 Aditya Mehra <aix.m@outlook.com>
+# SPDX-License-Identifier: LGPL-3.0-or-later
+#
+# Path -> label rules for actions/labeler. Labels must exist (see labels.yml).
+
+"area: ui":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "app/src/main/kotlin/com/verzeta/android/ui/**"
+          - "app/src/main/res/**"
+
+"area: wire-remote":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "app/src/main/kotlin/com/verzeta/android/protocol/**"
+          - "app/src/main/kotlin/com/verzeta/android/remote/**"
+
+"area: data-storage":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "app/src/main/kotlin/com/verzeta/android/data/**"
+          - "app/src/main/kotlin/com/verzeta/android/storage/**"
+          - "app/src/main/kotlin/com/verzeta/android/notifications/**"
+
+"area: build-ci":
+  - changed-files:
+      - any-glob-to-any-file:
+          - ".github/**"
+          - ".gitea/**"
+          - "**/*.gradle"
+          - "**/*.gradle.kts"
+          - "gradle/**"
+          - "gradle.properties"
+
+"documentation":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "docs/**"
+          - "**/*.md"

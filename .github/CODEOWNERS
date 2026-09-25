@@ -1,0 +1,15 @@
+# SPDX-FileCopyrightText: 2026 Aditya Mehra <aix.m@outlook.com>
+# SPDX-License-Identifier: LGPL-3.0-or-later
+#
+# Every change requires review from the maintainer. With branch protection's
+# "Require review from Code Owners", @AIIX is a mandatory reviewer on every PR.
+
+*                                                   @AIIX
+
+/.github/                                           @AIIX
+/CONTRIBUTING.md                                    @AIIX
+/SECURITY.md                                        @AIIX
+/LICENSING.md                                       @AIIX
+/CLA.md                                             @AIIX
+/app/src/main/kotlin/com/verzeta/android/protocol/  @AIIX
+/app/src/main/kotlin/com/verzeta/android/remote/    @AIIX

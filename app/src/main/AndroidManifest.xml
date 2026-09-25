@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2026 Aditya Mehra <aix.m@outlook.com>
+SPDX-License-Identifier: LGPL-3.0-or-later
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- POST_NOTIFICATIONS: API 33+ runtime permission required for @-mention alerts. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!--
+        Multi-form-factor feature declarations.
+        - leanback marked NOT required so the app installs on phones,
+          tablets, TVs, foldables, and ChromeOS / DeX desktop.
+        - touchscreen marked NOT required so Android TV (no touch) can
+          still install the app.
+    -->
+    <uses-feature
+        android:name="android.software.leanback"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.touchscreen"
+        android:required="false" />
+
+    <application
+        android:name=".VerzetaApplication"
+        android:allowBackup="true"
+        android:banner="@drawable/ic_launcher_foreground"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Verzeta">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:resizeableActivity="true"
+            android:windowSoftInputMode="adjustNothing">
+            <!--
+                DeX / ChromeOS default window size and minimums so the
+                activity opens at a sensible desktop window size and
+                resizes cleanly.
+            -->
+            <layout
+                android:defaultHeight="800dp"
+                android:defaultWidth="1280dp"
+                android:minHeight="380dp"
+                android:minWidth="380dp" />
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!--
+                Android TV / leanback launcher category so the app
+                appears on the TV home screen with the banner drawable
+                above.
+            -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

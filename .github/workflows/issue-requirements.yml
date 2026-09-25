@@ -1,0 +1,68 @@
+# SPDX-FileCopyrightText: 2026 Aditya Mehra <aix.m@outlook.com>
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
+# Validates bug reports on open/edit: catches placeholder/empty logcat traces and
+# vague repro steps, labels `needs-info`, and comments what is missing.
+name: Issue requirements
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  issues: write
+
+jobs:
+  validate:
+    if: contains(github.event.issue.labels.*.name, 'bug')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const body = issue.body || "";
+
+            function section(heading) {
+              const re = new RegExp("###\\s*" + heading + "[^\\n]*\\n+([\\s\\S]*?)(?:\\n###\\s|$)", "i");
+              const m = body.match(re);
+              return m ? m[1].trim() : "";
+            }
+
+            const placeholder = /^(n\/?a|none|na|-+|\.+|todo|will add|later|no ?logs?|nothing)\.?$/i;
+            const debug = section("Debug log with traces");
+            const steps = section("Steps to reproduce");
+
+            const problems = [];
+            if (!debug || debug.length < 40 || placeholder.test(debug) || debug === "_No response_") {
+              problems.push("**A logcat trace is required.** Capture with `adb logcat --pid=$(adb shell pidof -s com.verzeta.android)` while reproducing, then paste the relevant lines. See the [troubleshooting guide](https://github.com/Verzeta/Verzeta-Android/blob/main/docs/User/13-troubleshooting.md).");
+            }
+            if (!steps || steps.length < 15 || steps === "_No response_") {
+              problems.push("**Steps to reproduce are missing or too vague.** Provide exact, numbered steps.");
+            }
+
+            const marker = "<!-- verzeta-issue-requirements -->";
+            const comments = await github.rest.issues.listComments({
+              ...context.repo, issue_number: issue.number, per_page: 100 });
+            const prev = comments.data.find(c => c.body && c.body.includes(marker));
+
+            async function ensureLabel(name, color) {
+              try { await github.rest.issues.getLabel({ ...context.repo, name }); }
+              catch { try { await github.rest.issues.createLabel({ ...context.repo, name, color }); } catch (e) {} }
+            }
+
+            if (problems.length) {
+              await ensureLabel("needs-info", "e99695");
+              await github.rest.issues.addLabels({
+                ...context.repo, issue_number: issue.number, labels: ["needs-info"] });
+              const msg = marker + "\n\n" +
+                "Thanks for the report. Before it can be triaged, it needs:\n\n" +
+                problems.map(p => "- " + p).join("\n") + "\n\n" +
+                "Please **edit the issue** to add the missing information. Incomplete reports are closed automatically after 14 days. Comment or edit and it reopens for triage.";
+              if (prev) await github.rest.issues.updateComment({ ...context.repo, comment_id: prev.id, body: msg });
+              else await github.rest.issues.createComment({ ...context.repo, issue_number: issue.number, body: msg });
+            } else {
+              try { await github.rest.issues.removeLabel({ ...context.repo, issue_number: issue.number, name: "needs-info" }); } catch (e) {}
+              if (prev) await github.rest.issues.updateComment({ ...context.repo, comment_id: prev.id,
+                body: marker + "\n\nThanks. The required logcat trace and reproduction steps are present. Ready for triage." });
+            }

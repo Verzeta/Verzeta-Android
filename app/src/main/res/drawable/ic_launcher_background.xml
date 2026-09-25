@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2026 Aditya Mehra <aix.m@outlook.com>
+SPDX-License-Identifier: LGPL-3.0-or-later
+-->
+<!--
+  Adaptive-icon background. Solid deep-slate `#10141B` — the same surface the
+  app uses in dark mode and the original Verzeta studio palette the foreground
+  logo was designed against. A flat fill avoids any clash with the warm
+  orange/dark tones in the foreground art and survives every launcher mask
+  (Pixel squircle, OneUI circle/squircle, MIUI rounded square) without
+  artifacting.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#10141B" />
+</shape>

@@ -1,0 +1,104 @@
+# SPDX-FileCopyrightText: 2026 Aditya Mehra <aix.m@outlook.com>
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
+# Hard gate for pull requests: conventional title; a real, OPEN, complete linked
+# issue verified via the API; non-empty Summary/Why; a fully ticked checklist;
+# and pasted Gradle build/test proof. Non-compliant PRs are labelled
+# `needs-requirements` and the check fails; the stale workflow closes them in 24h.
+name: PR requirements
+
+on:
+  pull_request_target:
+    types: [opened, edited, reopened, ready_for_review, synchronize]
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  validate:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const body = pr.body || "";
+            const title = pr.title || "";
+            const problems = [];
+
+            const titleRe = /^(feat|fix|docs|refactor|perf|test|build|ci|chore)(\([a-z0-9.\-/]+\))?: .{6,}/;
+            if (!titleRe.test(title)) {
+              problems.push("**PR title must follow** `type(scope): summary`, e.g. `fix(ui): correct plans overlay progress`. Allowed types: feat, fix, docs, refactor, perf, test, build, ci, chore.");
+            }
+
+            const refs = [...body.matchAll(/\b(?:closes|fixes|resolves)\s+#(\d+)/gi)].map(m => parseInt(m[1], 10));
+            if (refs.length === 0) {
+              problems.push("**Every PR must address an existing issue.** Link it with `Closes #123`. If no issue exists, open one first (it goes through the required template).");
+            } else {
+              let validIssue = false;
+              for (const n of [...new Set(refs)]) {
+                try {
+                  const { data: iss } = await github.rest.issues.get({ ...context.repo, issue_number: n });
+                  if (iss.pull_request) { problems.push(`**#${n} is a pull request, not an issue.**`); continue; }
+                  if (iss.state !== "open") { problems.push(`**Linked issue #${n} is closed.**`); continue; }
+                  const labelNames = (iss.labels || []).map(l => (typeof l === "string" ? l : l.name));
+                  if (labelNames.includes("needs-info")) { problems.push(`**Linked issue #${n} is itself incomplete** (\`needs-info\`). Bring it up to standard first.`); continue; }
+                  validIssue = true;
+                } catch (e) { problems.push(`**Linked issue #${n} does not exist.**`); }
+              }
+              if (!validIssue && !problems.some(p => p.includes("#"))) {
+                problems.push("**No valid linked issue found.**");
+              }
+            }
+
+            function section(heading) {
+              const re = new RegExp("##\\s*" + heading + "\\s*\\n([\\s\\S]*?)(?:\\n##\\s|$)", "i");
+              const m = body.match(re);
+              if (!m) return "";
+              return m[1].replace(/<!--[\s\S]*?-->/g, "").trim();
+            }
+            if (section("Summary").length < 10) problems.push("**The Summary section is empty.**");
+            if (section("Why").length < 10) problems.push("**The Why section is empty.** Explain the reasoning.");
+
+            const boxes = body.match(/- \[[ xX]\]/g) || [];
+            const unchecked = boxes.filter(b => /\[ \]/.test(b)).length;
+            if (boxes.length < 5) problems.push("**The PR checklist is missing or was deleted.**");
+            else if (unchecked > 0) problems.push(`**${unchecked} checklist item(s) are not ticked.**`);
+
+            const proof = (body.match(/##\s*Build and test proof([\s\S]*?)(?:\n##\s|$)/i) || [null, ""])[1];
+            const hasBuild = /gradlew|compileDebugKotlin|BUILD SUCCESSFUL/i.test(proof);
+            const hasTests = /testDebugUnitTest|BUILD SUCCESSFUL|tests?\s+(passed|completed)/i.test(proof);
+            if (!hasBuild || !hasTests) {
+              problems.push("**No build/test proof.** Paste the real output of `./gradlew compileDebugKotlin testDebugUnitTest` under **Build and test proof**, showing BUILD SUCCESSFUL and the unit-test results.");
+            }
+
+            const marker = "<!-- verzeta-pr-requirements -->";
+            const comments = await github.rest.issues.listComments({
+              ...context.repo, issue_number: pr.number, per_page: 100 });
+            const prev = comments.data.find(c => c.body && c.body.includes(marker));
+
+            async function ensureLabel(name, color) {
+              try { await github.rest.issues.getLabel({ ...context.repo, name }); }
+              catch { try { await github.rest.issues.createLabel({ ...context.repo, name, color }); } catch (e) {} }
+            }
+
+            if (problems.length) {
+              await ensureLabel("needs-requirements", "b60205");
+              await github.rest.issues.addLabels({ ...context.repo, issue_number: pr.number, labels: ["needs-requirements"] });
+              try { await github.rest.issues.removeLabel({ ...context.repo, issue_number: pr.number, name: "requirements-met" }); } catch (e) {}
+              const msg = marker + "\n\n" +
+                "This pull request does **not** meet the contribution requirements yet:\n\n" +
+                problems.map(p => "- " + p).join("\n") + "\n\n" +
+                "The bar is deliberately high. It keeps the codebase and tracker free of cruft. Satisfy **every** point. A PR left non-compliant is **closed after 24 hours**; reopen it once it qualifies. See [CONTRIBUTING.md](https://github.com/Verzeta/Verzeta-Android/blob/main/CONTRIBUTING.md).";
+              if (prev) await github.rest.issues.updateComment({ ...context.repo, comment_id: prev.id, body: msg });
+              else await github.rest.issues.createComment({ ...context.repo, issue_number: pr.number, body: msg });
+              core.setFailed("PR does not meet the contribution requirements.");
+            } else {
+              try { await github.rest.issues.removeLabel({ ...context.repo, issue_number: pr.number, name: "needs-requirements" }); } catch (e) {}
+              await ensureLabel("requirements-met", "0e8a16");
+              await github.rest.issues.addLabels({ ...context.repo, issue_number: pr.number, labels: ["requirements-met"] });
+              if (prev) await github.rest.issues.updateComment({ ...context.repo, comment_id: prev.id,
+                body: marker + "\n\nAll contribution requirements are present. Thanks. Ready for review." });
+            }

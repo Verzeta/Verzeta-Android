@@ -1,0 +1,49 @@
+# SPDX-FileCopyrightText: 2026 Aditya Mehra <aix.m@outlook.com>
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
+name: Feature request
+description: Propose a feature or enhancement. Open this BEFORE writing a patch.
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Per [CONTRIBUTING.md](https://github.com/Verzeta/Verzeta-Android/blob/main/CONTRIBUTING.md), please open a feature request **before** writing a patch. This client mirrors the desktop host over the wire protocol: new capability often needs a host-side op first, so discuss the shape early.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What are you trying to do that the app does not let you do today?
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: Concrete behaviour, not just the goal. Note if it needs a new host wire op.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope check (all required)
+      options:
+        - label: This is **not** telemetry, analytics, or "anonymous usage statistics".
+          required: true
+        - label: This does **not** add auto-update or phone-home the user did not enable.
+          required: true
+        - label: This does **not** require a forced cloud account.
+          required: true
+        - label: I searched existing issues and this has not already been proposed.
+          required: true
